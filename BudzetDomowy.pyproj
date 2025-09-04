@@ -1,0 +1,128 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <Name>BudzetDomowy</Name>
+    <RootNamespace>BudzetDomowy</RootNamespace>
+    <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
+    <TestFramework>Pytest</TestFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>d6fecbf8-fbbb-47d9-9737-9520b5bb654d</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <ProjectTypeGuids>{5F0BE9CA-D677-4A4D-8806-6076C0FAAD37};{349c5851-65df-11da-9384-00065b846f21};{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <StartupFile>manage.py</StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <LaunchProvider>Django launcher</LaunchProvider>
+    <DjangoSettingsModule>BudzetDomowy.settings</DjangoSettingsModule>
+    <WebBrowserUrl>http://localhost</WebBrowserUrl>
+    <OutputPath>.</OutputPath>
+    <SuppressCollectPythonCloudServiceFiles>true</SuppressCollectPythonCloudServiceFiles>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="budzetApp\admin.py" />
+    <Compile Include="budzetApp\apps.py" />
+    <Compile Include="budzetApp\forms.py" />
+    <Compile Include="budzetApp\migrations\__init__.py" />
+    <Compile Include="budzetApp\models.py" />
+    <Compile Include="budzetApp\tests.py" />
+    <Compile Include="budzetApp\urls.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="budzetApp\views.py" />
+    <Compile Include="budzetApp\__init__.py" />
+    <Compile Include="manage.py" />
+    <Compile Include="BudzetDomowy\__init__.py" />
+    <Compile Include="BudzetDomowy\settings.py" />
+    <Compile Include="BudzetDomowy\urls.py" />
+    <Compile Include="BudzetDomowy\wsgi.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="budzetApp\static\css\addtransaction.css" />
+    <Content Include="budzetApp\static\css\budget.css" />
+    <Content Include="budzetApp\static\css\form-switch.css" />
+    <Content Include="budzetApp\static\css\index.css" />
+    <Content Include="budzetApp\static\css\index_buttons.css" />
+    <Content Include="budzetApp\static\css\login_style.css" />
+    <Content Include="budzetApp\static\css\style.css" />
+    <Content Include="budzetApp\static\css\transaction.css" />
+    <Content Include="budzetApp\static\css\transaction_detail.css" />
+    <Content Include="budzetApp\templates\budzetApp\addtransaction.html" />
+    <Content Include="budzetApp\templates\budzetApp\temp.html" />
+    <Content Include="budzetApp\templates\budzetApp\index.html" />
+    <Content Include="budzetApp\templates\budzetApp\transaction.html" />
+    <Content Include="budzetApp\templates\budzetApp\transaction_detail.html" />
+    <Content Include="requirements.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="budzetApp\" />
+    <Folder Include="budzetApp\migrations\" />
+    <Folder Include="budzetApp\static\css\" />
+    <Folder Include="budzetApp\templates\" />
+    <Folder Include="budzetApp\templates\budzetApp\" />
+    <Folder Include="BudzetDomowy\" />
+    <Folder Include="budzetApp\static\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Interpreter Include="env\">
+      <Id>env</Id>
+      <Version>3.9</Version>
+      <Description>env (Python 3.9 (64-bit))</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+      <Architecture>X64</Architecture>
+    </Interpreter>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.Django.targets" />
+  <!-- Specify pre- and post-build commands in the BeforeBuild and 
+       AfterBuild targets below. -->
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <AutoAssignPort>True</AutoAssignPort>
+          <UseCustomServer>True</UseCustomServer>
+          <CustomServerUrl>http://localhost</CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}" User="">
+        <WebProjectProperties>
+          <StartPageUrl>
+          </StartPageUrl>
+          <StartAction>CurrentPage</StartAction>
+          <AspNetDebugging>True</AspNetDebugging>
+          <SilverlightDebugging>False</SilverlightDebugging>
+          <NativeDebugging>False</NativeDebugging>
+          <SQLDebugging>False</SQLDebugging>
+          <ExternalProgram>
+          </ExternalProgram>
+          <StartExternalURL>
+          </StartExternalURL>
+          <StartCmdLineArguments>
+          </StartCmdLineArguments>
+          <StartWorkingDirectory>
+          </StartWorkingDirectory>
+          <EnableENC>False</EnableENC>
+          <AlwaysStartWebServerOnDebug>False</AlwaysStartWebServerOnDebug>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>
