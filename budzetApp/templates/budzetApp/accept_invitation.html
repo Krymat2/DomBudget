@@ -1,0 +1,12 @@
+{% extends "budzetApp/temp.html" %}
+
+{% block main %}
+<h2>Joining Budget</h2>
+{% if success %}
+    <p>You successfully joined to the budget <strong>{{ budget.name }}</strong>.</p>
+    <a href="{% url 'budzetApp:budget_list' %}">Switch to budget list</a>
+{% else %}
+    <p>Invitation is incorrect or was already used.</p>
+    <a href="{% url 'budzetApp:index' %}">Back to main page</a>
+{% endif %}
+{% endblock %}

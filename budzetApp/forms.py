@@ -1,0 +1,98 @@
+from typing import Any
+from django import forms
+from django.core.exceptions import ValidationError
+
+from .models import Budzety, Transakcje, Uzytkownicy, Kategorie
+
+
+class TransakcjeForm(forms.ModelForm):
+
+
+    class Meta:
+        model = Transakcje
+        fields = ['budget', 'category', 'amount', 'description']
+
+    def __init__(self, *args, **kwargs):
+        budgets_qs = kwargs.pop('budgets_qs', None)
+        super().__init__(*args, **kwargs)
+        if budgets_qs is not None:
+            self.fields['budget'].queryset = budgets_qs
+
+        self.fields['budget'].label_from_instance = lambda obj: obj.name
+
+
+class UserRegistrationForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput, label="Password")
+    confirm_password = forms.CharField(widget=forms.PasswordInput, label="Confirm Password")
+
+    class Meta:
+        #model = User
+        model = Uzytkownicy
+        fields = ['username','email', 'password']
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if Uzytkownicy.objects.filter(email=email).exists():
+            raise ValidationError("Podany adres e-mail jest już zajęty.")
+        return email
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get("password")
+        confirm_password = cleaned_data.get("confirm_password")
+
+        if password != confirm_password:
+            raise ValidationError("Hasła nie są zgodne.")
+        return cleaned_data
+
+
+class BudgetForm(forms.ModelForm):
+    #transactions = forms.ModelMultipleChoiceField(
+    #    queryset=Transakcje.objects.filter(user_id=),
+    #    widget=forms.CheckboxSelectMultiple,
+    #    required=False,
+    #    label="Wybierz transakcje"
+    #)
+
+    class Meta:
+        model = Budzety
+        fields = ["name", "budget_amount"]
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['transactions'].queryset = Transakcje.objects.filter(user=user)
+
+
+class KategorieCreateForm(forms.ModelForm):
+    class Meta:
+        model = Kategorie
+        fields = ['category_name', 'budget']
+        labels = {
+            'category_name': 'Category Name',
+            'budget': 'Budget',
+        }
+
+    def __init__(self, *args, **kwargs):
+        budgets_qs = kwargs.pop('budgets_qs', None)
+        super().__init__(*args, **kwargs)
+        if budgets_qs is not None:
+            self.fields['budget'].queryset = budgets_qs
+    
+        self.fields['budget'].label_from_instance = lambda obj: obj.name
+
+class AddUserToBudgetForm(forms.Form):
+    budget = forms.ModelChoiceField(
+        queryset=Budzety.objects.all(),
+        label="Budget"
+    )
+
+    def __init__(self, *args, **kwargs):
+        budgets_qs = kwargs.pop('budgets_qs', None)
+        super().__init__(*args, **kwargs)
+        if budgets_qs is not None:
+            self.fields['budget'].queryset = budgets_qs
+
+        # Ustaw własną metodę label_from_instance
+        self.fields['budget'].label_from_instance = lambda obj: obj.name

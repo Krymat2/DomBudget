@@ -1,0 +1,410 @@
+{% extends "budzetApp/temp.html" %}
+{% load static %}
+
+{% block title %}
+    Main Page
+{% endblock title %}
+
+{% block header %}
+<div id="app-header" style="display: flex; align-items: center; gap: 1rem;">
+    {# Tutaj możesz zostawić inne ogólne elementy nagłówka aplikacji, np. logo, nazwa aplikacji #}
+    {# Nazwa budżetu i selektor zostaną przeniesione do main #}
+</div>
+{% endblock header %}
+
+
+{% block styles %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/index.css' %}">
+<link rel="stylesheet" href="{% static 'css/index_buttons.css' %}">
+<style>
+.popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(18,18,18,0.85);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+.popup-overlay.active {
+    display: flex;
+}
+.popup-content {
+    background: #232323;
+    padding: 2em 1.5em;
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    max-width: 320px;
+    margin: auto;
+    text-align: center;
+    color: #e0e0e0;
+    border: 1px solid #333;
+}
+.popup-title {
+    font-size: 1.2em;
+    margin-bottom: 1.5em;
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+.popup-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1em;
+}
+.popup-actions .action-btn {
+    background-color: #6200ea;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    margin: 2px;
+}
+.popup-actions .action-btn:hover {
+    background-color: #7c4dff;
+    color: #fff;
+    transform: translateY(-1px);
+}
+</style>
+{% endblock styles %}
+
+{% block scripts %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const budgetToggle = document.getElementById('budget-dropdown-toggle');
+    const budgetDropdown = document.getElementById('budget-dropdown-main');
+    const budgetLinks = document.querySelectorAll('.budget-select');
+
+    if (budgetToggle && budgetDropdown) {
+        budgetToggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            budgetDropdown.classList.toggle('show');
+        });
+
+        budgetLinks.forEach(function (link) {
+            link.addEventListener('click', function () {
+                budgetDropdown.classList.remove('show');
+            });
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!budgetDropdown.contains(event.target) && !budgetToggle.contains(event.target)) {
+                budgetDropdown.classList.remove('show');
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && budgetDropdown.classList.contains('show')) {
+                budgetDropdown.classList.remove('show');
+            }
+        });
+    }
+
+    {% if selected_budget and category_expenses and category_expenses|length > 0 %}
+    var chartCanvas = document.getElementById('expensesPieChart');
+    if (chartCanvas) {
+        var ctx = chartCanvas.getContext('2d');
+        var data = {
+            labels: [
+                {% for cat in category_expenses %}
+                    "{{ cat.category__category_name }}"{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for cat in category_expenses %}
+                        {{ cat.total|floatformat:2 }}{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                 backgroundColor: [
+                    '#7c4dff', '#ff9800', '#00bcd4', '#e74c3c', '#8bc34a',
+                    '#ffd600', '#ff4081', '#3f51b5', '#ffeb3b', '#795548',
+                    '#00e676', '#c51162', '#009688', '#f44336', '#607d8b'
+                ],
+                borderWidth: 1
+            }]
+        };
+        new Chart(ctx, {
+            type: 'pie',
+            data: data,
+            options: {
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#fff',
+                            font: { size: 15 }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+});
+</script>
+
+<script>
+let deleteUrl = "";
+function showDeletePopup(transactionId) {
+    // Ustaw adres do usuwania transakcji
+    deleteUrl = "{% url 'budzetApp:delete_transaction' 0 %}".replace("0", transactionId);
+    const form = document.getElementById('deleteForm');
+    form.action = deleteUrl;
+    document.getElementById('deletePopup').classList.add('active');
+}
+function closeDeletePopup() {
+    document.getElementById('deletePopup').classList.remove('active');
+    deleteUrl = "";
+}
+</script>
+
+<script>
+function showDetailsPopup(transactionId) {
+    const popup = document.getElementById('detailsPopup');
+    const body = document.getElementById('detailsPopupBody');
+    popup.classList.add('active');
+    body.innerHTML = '<div style="text-align:center; color:#aaa;">Loading...</div>';
+    fetch('{% url "budzetApp:transaction_detail_api" 0 %}'.replace('0', transactionId))
+        .then(response => response.json())
+        .then(data => {
+            body.innerHTML = `
+                <div style="text-align:left;">
+                    <strong>Date:</strong> ${data.transaction_date}<br>
+                    <strong>Description:</strong> ${data.description}<br>
+                    <strong>Category:</strong> ${data.category}<br>
+                    <strong>Amount:</strong> ${data.amount} zł<br>
+                    <strong>Added by:</strong> ${data.user}<br>
+                </div>
+            `;
+        })
+        .catch(() => {
+            body.innerHTML = '<div style="color:#e74c3c;">Error loading details.</div>';
+        });
+}
+function closeDetailsPopup() {
+    document.getElementById('detailsPopup').classList.remove('active');
+}
+</script>
+{% endblock scripts %}
+
+{% block main %}
+<div class="summary-section">
+    {# Przeniesiony kontener wyboru budżetu do sekcji głównej #}
+    <div id="budget-selector-section" style="margin-bottom: 20px; position: relative;">
+        <div class="budget-flex-row">
+            <!-- Wybór budżetu -->
+            <div class="budget-dropdown-panel">
+                <div id="budget-display-container-main" class="budget-dropdown-toggle-row">
+                    <span id="budget-dropdown-toggle" style="display: flex; align-items: center;">
+                        <span style="font-size: 1.5rem; font-weight: bold; margin-right: 8px;">
+                            Budget:
+                        </span>
+                        <span id="current-budget-name-main" style="font-weight: bold;">
+                            {% if selected_budget %}
+                                {{ selected_budget.name }}
+                            {% else %}
+                                Panel główny
+                            {% endif %}
+                        </span>
+                        <span id="budget-arrow" style="font-size: 1.2rem; margin-left: 8px;">▼</span>
+                    </span>
+                </div>
+                <div id="budget-dropdown-main" class="budget-dropdown-content">
+                    {% if budgets %}
+                    <h3>Choose Budget</h3>
+                    <ul>
+                        {% for budget in budgets %}
+                        <li>
+                            <a href="?budget={{ budget.id }}" class="budget-select">{{ budget.name }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>No budgets available.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Użytkownicy budżetu -->
+            {% if selected_budget %}
+            <div class="budget-users-panel styled-users-panel">
+                <h3>Budget users:</h3>
+                <ul>
+                    {% for user in users_in_budget %}
+                    <li>{{ user.username }} <span class="user-email">({{ user.email }})</span></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="summary-cards">
+        <!-- USUNIĘTO KARTĘ Budget Amount -->
+        <div class="summary-card income">
+            <h3>Income</h3>
+            <p class="amount">{{ total_income }} zł</p>
+        </div>
+        <div class="summary-card expenses">
+            <h3>Expenses</h3>
+            <p class="amount">{{ total_expenses }} zł</p>
+        </div>
+        <div class="summary-card balance">
+            <h3>Balance</h3>
+            <p class="amount">
+                {% if budget_amount %}
+                    {{ budget_amount|add:total_income|add:total_expenses }} zł
+                {% else %}
+                    {{ total_income|add:total_expenses }} zł
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    {% if not selected_budget %}
+    <p>Choose budget to see details.</p>
+    {% endif %}
+</div>
+
+<div class="dashboard-container">
+    <div class="quick-actions">
+        <h2>Quick Actions</h2>
+        <div class="action-grid">
+            {% if selected_budget %}
+            <div class="action-card add-transaction">
+                <i class="icon-add-transaction">➕</i>
+                <h3>Add Transaction</h3>
+                <p>Record a new expense or income</p>
+                <a href="{% url 'budzetApp:addtransaction' %}" aria-label="Add transaction"></a>
+            </div>
+            {% endif %}
+            <div class="action-card create-budget">
+                <i class="icon-create-budget">💰</i>
+                <h3>Create Budget</h3>
+                <p>Set up a new budget plan</p>
+                <a href="{% url 'budzetApp:create_budget' %}" aria-label="Create budget"></a>
+            </div>
+
+        </div>
+    </div>
+
+    {% if selected_budget %}
+    <div class="dashboard-flex-row" style="display: flex; align-items: flex-start; gap: 32px; flex-wrap: wrap;">
+        <div class="recent-transactions" style="flex: 2 1 400px; min-width: 320px;">
+            <h2>Recent Transactions</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Added by</th>
+                        <th><!-- Actions column, but no header text --></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>{{ transaction.transaction_date }}</td>
+                        <td>{{ transaction.description }}</td>
+                        <td>{{ transaction.category }}</td>
+                        <td class="{% if transaction.amount < 0 %}expense{% else %}income{% endif %}">
+                            {{ transaction.amount }} zł
+                        </td>
+                        <td>
+                            {{ transaction.user.username }}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <form onsubmit="showDetailsPopup('{{ transaction.id }}'); return false;" style="display:inline;">
+                                    <button type="submit" class="btn-submit" style="padding: 4px 16px;">Details</button>
+                                </form>
+                                <button type="button"
+                                        class="btn-delete"
+                                        onclick="showDeletePopup('{{ transaction.id }}')"
+                                        style="padding: 4px 16px;">
+                                    Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" style="text-align: center; padding: 20px;">No transactions yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if is_paginated %}
+            <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if category_expenses %}
+        <div class="chart-section" style="flex: 1 1 320px; min-width: 260px; max-width: 420px; background: #232323; border-radius: 14px; box-shadow: 0 4px 24px rgba(0,0,0,0.13); padding: 24px; margin-top: 0;">
+            <h3 style="text-align:center; color:#fff; margin-bottom: 18px; font-size: 1.15rem;">Expenses by Category</h3>
+            <canvas id="expensesPieChart" width="350" height="350"></canvas>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Delete confirmation popup - umieść tuż przed endblock main -->
+<div id="deletePopup" class="popup-overlay">
+  <div class="popup-content">
+    <p class="popup-title">Are you sure you want to delete this transaction?</p>
+    <div class="popup-actions">
+      <form id="deleteForm" method="post" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="action-btn">Yes</button>
+      </form>
+      <button type="button" class="action-btn" onclick="closeDeletePopup()">No</button>
+    </div>
+  </div>
+</div>
+
+<div id="detailsPopup" class="popup-overlay">
+  <div class="popup-content" id="detailsPopupContent">
+    <p class="popup-title">Transaction details</p>
+    <div class="popup-details" id="detailsPopupBody" style="margin-bottom: 1.5em;">
+      <!-- Szczegóły zostaną załadowane przez JS -->
+      <div style="text-align:center; color:#aaa;">Loading...</div>
+    </div>
+    <div class="popup-actions">
+      <button type="button" class="action-btn" onclick="closeDetailsPopup()">Close</button>
+    </div>
+  </div>
+</div>
+
+
+{% endblock main %}
+
+{% block side_menu %}
+{{ block.super }}
+{% endblock side_menu %}

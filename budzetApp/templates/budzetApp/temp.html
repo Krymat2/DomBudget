@@ -1,0 +1,158 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Home Budget{% endblock title %}</title>
+    {% block styles %}
+    <link rel="stylesheet" href="{% static 'css/template.css' %}">
+    {% endblock styles %}
+    
+</head>
+
+<body>
+
+    {% block navbar %}
+    <nav class="navbar" style="display: flex; align-items: center; justify-content: space-between; padding: 0 32px;">
+        <div class="navbar-left">
+            <div id="menu-toggle" class="menu-icon" onclick="toggleMenu()">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+
+        <div class="navbar-center" style="flex: 1; display: flex; justify-content: center;">
+            <a href="{% url 'budzetApp:index' %}"
+               style="
+                    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+                    font-size: 2.1rem;
+                    font-weight: 800;
+                    letter-spacing: 1px;
+                    color: #fff;
+                    background: linear-gradient(90deg, #6200ea 0%, #7c4dff 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
+                    text-decoration: none;
+                    transition: opacity 0.18s;
+                    text-align: center;
+                    line-height: 1.3;
+                    padding-bottom: 6px;
+               "
+               onmouseover="this.style.opacity='0.8'"
+               onmouseout="this.style.opacity='1'"
+            >
+                Home Budget App
+            </a>
+        </div>
+
+        {% if session_user %}
+        <div class="navbar-right">
+            <div id="user-menu-container">
+                <span class="user-name">{{ session_user.username }}</span>
+                <button id="user-menu-btn">
+                    <span>▼</span>
+                </button>
+                <div id="user-dropdown">
+                    <a href="{% url 'budzetApp:edit_profile' %}">Edit Profile</a>
+                    <a href="{% url 'budzetApp:logout' %}">Log out</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </nav>
+    {% endblock navbar %}
+
+    {% block side_menu_login %}
+    <div class="side-menu" id="sideMenu">
+        {% block side_menu %}
+        <ul>
+            <li><a href="{% url 'budzetApp:index' %}" class="menu-item">📊 Main panel</a></li>
+            <li><a href="{% url 'budzetApp:create_budget' %}" class="menu-item">💰 Create Budgets</a></li>
+            <li><a href="{% url 'budzetApp:budget_list' %}" class="menu-item">🧾 Show Budgets</a></li>
+            <li><a href="{% url 'budzetApp:addtransaction' %}" class="menu-item">💳 Add Transactions</a></li>
+            <li><a href="{% url 'budzetApp:create_category' %}" class="menu-item">📋 Create Category</a></li>
+            <li><a href="{% url 'budzetApp:add_user_to_budget' %}" class="menu-item">👥 Add User to Budget</a></li>
+            <li><a href="{% url 'budzetApp:export_data' %}" class="menu-item">👥 Export statistics</a></li>
+            <li><a href="{% url 'budzetApp:pdf_temp' %}" class="menu-item">👥 PDF temp</a></li>
+        </ul>
+        {% endblock side_menu %}
+    </div>
+    {% endblock side_menu_login %}
+
+    <main class="main-content">
+        {% block main %}{% endblock main %}
+    </main>
+
+    {% if messages %}
+    <div id="global-messages" class="messages-bottom-right">
+        <ul>
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% block scripts %}
+    <script>
+        function toggleMenu() {
+            const menu = document.getElementById('sideMenu');
+            menu.classList.toggle('active');
+        }
+
+        const userMenuBtn = document.getElementById('user-menu-btn');
+        const userDropdown = document.getElementById('user-dropdown');
+
+        function toggleUserMenu(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            userDropdown.classList.toggle('show');
+            userMenuBtn.classList.toggle('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const msg = document.getElementById('global-messages');
+            if (msg) {
+                setTimeout(() => { msg.style.display = 'none'; }, 5000);
+            }
+        });
+
+        userMenuBtn?.addEventListener('click', toggleUserMenu);
+
+        document.addEventListener('click', (event) => {
+            if (!userMenuBtn?.contains(event.target)) {
+                userDropdown?.classList.remove('show');
+                userMenuBtn?.classList.remove('active');
+            }
+
+            const sideMenu = document.getElementById('sideMenu');
+            const menuToggle = document.getElementById('menu-toggle');
+
+            if (sideMenu.classList.contains('active') &&
+                !sideMenu.contains(event.target) &&
+                !menuToggle.contains(event.target)) {
+
+                sideMenu.classList.remove('active');
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                userDropdown?.classList.remove('show');
+                userMenuBtn?.classList.remove('active');
+            }
+
+            const sideMenu = document.getElementById('sideMenu');
+            if (event.key === 'Escape' && sideMenu.classList.contains('active')) {
+                sideMenu.classList.remove('active');
+            }
+        });
+    </script>
+    {% endblock scripts %}
+</body>
+
+</html>

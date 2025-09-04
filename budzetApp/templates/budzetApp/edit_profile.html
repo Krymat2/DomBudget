@@ -1,0 +1,47 @@
+{% extends "budzetApp/temp.html" %}
+{% load static %}
+
+{% block styles %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+{% endblock styles %}
+
+{% block main %}
+<div class="form-container">
+  <h2>Edit Profile</h2>
+  <div class="user-info">
+    <p><strong>Login:</strong> {{ current_user.username }}</p>
+    <p><strong>E-mail:</strong> {{ current_user.email }}</p>
+  </div>
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  <form method="post" class="form">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" value="{{ current_user.username }}" required>
+    </div>
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" value="{{ current_user.email }}" required>
+    </div>
+    <div class="form-group">
+      <label for="password">New Password</label>
+      <input type="password" id="password" name="password" autocomplete="new-password">
+    </div>
+    <div class="form-group">
+      <label for="confirm_password">Confirm Password</label>
+      <input type="password" id="confirm_password" name="confirm_password" autocomplete="new-password">
+    </div>
+    <div class="form-actions">
+            <button type="submit" class="btn-submit">Save changes</button>
+            <a href="{% url 'budzetApp:index' %}" class="back-link">Back</a>
+        </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "budzetApp/temp.html" %}
+{% load static %}
+
+{% block title %}
+Szczegóły transakcji
+{% endblock %}
+
+{% block styles %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+{% endblock %}
+
+{% block main %}
+<div class="form-container wide">
+    <h2>Transaction details</h2>
+    <table class="details-table">
+        <tr>
+            <th>User</th>
+            <td>{{ transaction.user.username }}</td>
+        </tr>
+        <tr>
+            <th>Category</th>
+            <td>{{ transaction.category.category_name }}</td>
+        </tr>
+        <tr>
+            <th>Type</th>
+            <td>
+                {% if transaction.amount < 0 %}
+                Expense
+                {% else %}
+                Payment
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Amount</th>
+            <td class="{% if transaction.amount < 0 %}expense{% else %}income{% endif %}">
+                {% if bt.amount < 0 %}
+                {{ transaction.amount|floatformat:"2" |slice:"1:" }}
+                {% else %}
+                {{ transaction.amount }}
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Date</th>
+            <td>{{ transaction.transaction_date }}</td>
+        </tr>
+        <tr>
+            <th>Description</th>
+            <td>{{ transaction.description }}</td>
+        </tr>
+    </table>
+    <div class="form-actions">
+        <a href="{% url 'budzetApp:index' %}" class="btn-cancel">Back</a>
+    </div>
+</div>
+{% endblock %}
