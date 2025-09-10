@@ -1,5 +1,6 @@
 # Standard library
 import secrets
+import hashlib
 
 # Django core
 from django.shortcuts import render, redirect, get_object_or_404
@@ -18,7 +19,6 @@ from django.utils.timezone import now
 
 from itertools import zip_longest
 
-
 # App models
 from budzetApp.models import (
     Budzety, Uzytkownicy, Kategorie, Transakcje, UzytkownikBudzetPolaczenia,
@@ -30,9 +30,10 @@ from .forms import (
     AddUserToBudgetForm, BudgetForm, KategorieCreateForm, UserRegistrationForm, TransakcjeForm
 )
 
+
 # Create your views here.
 
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 # Strona główna aplikacji budżetowej
 
@@ -47,24 +48,24 @@ def index(request):
     transactions = []
     budget_amount = None
     category_expenses = (
-    Transakcje.objects
-    .filter(budget=selected_budget, amount__lt=0)
-    .values('category__category_name')
-    .annotate(total=Sum('amount'))
-    .order_by('category__category_name')
-)
+        Transakcje.objects
+        .filter(budget=selected_budget, amount__lt=0)
+        .values('category__category_name')
+        .annotate(total=Sum('amount'))
+        .order_by('category__category_name')
+    )
     for cat in category_expenses:
         cat['total'] = abs(cat['total'])
 
     if user_id:
         user = Uzytkownicy.objects.get(pk=user_id)
         budgets = Budzety.objects.filter(users=user).order_by('id')
-        selected_budget_id = request.GET.get('budget') if request.GET.get('budget') else request.session.get('selected_budget') if request.session.get('selected_budget') else None
+        selected_budget_id = request.GET.get('budget') if request.GET.get('budget') else request.session.get(
+            'selected_budget') if request.session.get('selected_budget') else None
         if selected_budget_id:
             selected_budget = budgets.filter(id=selected_budget_id).first()
         else:
             selected_budget = budgets.first() if budgets.exists() else None
-
 
         if selected_budget:
             request.session['selected_budget'] = selected_budget.id
@@ -86,7 +87,6 @@ def index(request):
     else:
         messages.error(request, "Please log in or create account.")
         return redirect('budzetApp:login')
-
 
     paginator = Paginator(transactions, 10)
     page_number = request.GET.get('page')
@@ -116,7 +116,8 @@ def index(request):
 
     return render(request, 'budzetApp/index.html', context)
 
-#----------------------------------------------------------------------
+
+# ----------------------------------------------------------------------
 
 # Zarządzanie użytkownikami
 
@@ -127,6 +128,8 @@ def login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+
+        password = hashlib.sha256(password.encode('utf-8')).hexdigest()
 
         user = Uzytkownicy.objects.filter(username=username, password=password)
         if user.exists():
@@ -146,27 +149,31 @@ def register(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-           
+
             user = form.save(commit=False)
-            user.password = form.cleaned_data['password'] 
+
+            password_sec = hashlib.sha256(form.cleaned_data['password'].encode('utf-8')).hexdigest()
+            user.password = password_sec
             user.save()
             messages.success(request, "Register succesful, you can now log in.")
             if next_url:
                 login_url = f"{reverse_lazy('budzetApp:login')}?{urlencode({'next': next_url})}"
                 return redirect(login_url)
-            return redirect('budzetApp:login') 
+            return redirect('budzetApp:login')
         else:
             messages.error(request, "Register failed, please try again.")
             return render(request, 'budzetApp/register.html', {'form': form, 'next': next_url})
     else:
         form = UserRegistrationForm()
-        
+
     return render(request, 'budzetApp/register.html', {'form': form, 'next': next_url})
+
 
 # Strona wylogowania
 def logout_view(request):
     request.session.flush()
     return render(request, 'budzetApp/logout.html')
+
 
 # Strona edycji profilu użytkownika
 def edit_profile(request):
@@ -181,7 +188,9 @@ def edit_profile(request):
         username = request.POST.get('username', '').strip()
         email = request.POST.get('email', '').strip()
         password = request.POST.get('password', '')
+        password = hashlib.sha256(password.encode('utf-8')).hexdigest()
         confirm_password = request.POST.get('confirm_password', '')
+        confirm_password = hashlib.sha256(confirm_password.encode('utf-8')).hexdigest()
 
         errors = []
 
@@ -214,7 +223,8 @@ def edit_profile(request):
 
     return render(request, 'budzetApp/edit_profile.html', {'current_user': current_user})
 
-#----------------------------------------------------------------------
+
+# ----------------------------------------------------------------------
 
 # Zarządzanie budżetami
 
@@ -242,6 +252,7 @@ def create_budget(request):
         form = BudgetForm()
     return render(request, 'budzetApp/create_budget.html', {'form': form})
 
+
 # Strona listy budżetów
 def budget_list(request):
     user_id = request.session.get('user_id')
@@ -267,6 +278,7 @@ def budget_list(request):
     return render(request, 'budzetApp/budget_list.html', {'budget_summaries': budget_summaries})
 
     return render(request, 'budzetApp/budget_list.html', {'budget_summaries': budget_summaries})
+
 
 # Strona dodawania użytkownika do budżetu
 def add_user_to_budget(request):
@@ -317,6 +329,7 @@ def add_user_to_budget(request):
         'invite_link': invite_link,
     })
 
+
 # Strona pobierania kategorii budżetu
 def get_budget_categories(request):
     budget_id = request.GET.get('budget_id')
@@ -325,6 +338,7 @@ def get_budget_categories(request):
         categories = Kategorie.objects.filter(budget_id=budget_id)
     data = [{'id': c.id, 'name': c.category_name} for c in categories]
     return JsonResponse({'categories': data})
+
 
 # Strona akceptacji zaproszenia do budżetu
 def accept_invitation(request):
@@ -335,7 +349,6 @@ def accept_invitation(request):
 
     user_id = request.session.get('user_id')
     if not user_id:
-
         next_url = f"{request.path}?token={token}"
         login_url = f"{reverse_lazy('budzetApp:login')}?{urlencode({'next': next_url})}"
 
@@ -355,6 +368,7 @@ def accept_invitation(request):
         messages.success(request, f"You have joined {budget.name}.")
 
     return redirect('budzetApp:index')
+
 
 # Strona do opuszczania budzetow
 def leave_budget(request, budget_id):
@@ -376,7 +390,8 @@ def leave_budget(request, budget_id):
 
     return redirect('budzetApp:budget_list')
 
-#----------------------------------------------------------------------
+
+# ----------------------------------------------------------------------
 
 # Zarządzanie transakcjami
 
@@ -408,6 +423,7 @@ def add_transaction(request):
         form = TransakcjeForm(budgets_qs=budgets_qs)
     return render(request, 'budzetApp/addtransaction.html', {'form': form})
 
+
 # Strona listy transakcji
 '''def transaction_list(request):
     user_id = request.session['user_id']
@@ -419,6 +435,7 @@ def add_transaction(request):
         'transactions': transactions
     }
     return render(request, 'budzetApp/transaction.html', context)'''
+
 
 # Strona szczegółów transakcji
 def transaction_detail(request, transaction_id):
@@ -435,6 +452,7 @@ def transaction_detail(request, transaction_id):
 
     return render(request, 'budzetApp/transaction_detail.html', {'transaction': transaction})
 
+
 def transaction_detail_api(request, pk):
     transaction = get_object_or_404(Transakcje, pk=pk)
     return JsonResponse({
@@ -444,7 +462,9 @@ def transaction_detail_api(request, pk):
         "amount": transaction.amount,
         "user": transaction.user.username,
     })
-#----------------------------------------------------------------------
+
+
+# ----------------------------------------------------------------------
 
 # Zarządzanie kategoriami
 
@@ -482,7 +502,6 @@ def category_list(request):
     selected_budget_id = request.session.get('selected_budget')
     categories = Kategorie.objects.filter(budget__users=user, budget__id=selected_budget_id).order_by('category_name')
 
-
     return render(request, 'budzetApp/category_list.html', {
         'categories': categories
     })
@@ -513,6 +532,7 @@ def edit_category(request, pk):
 
     return render(request, 'budzetApp/edit_category.html', {'form': form})
 
+
 def delete_category(request, pk):
     user_id = request.session.get('user_id')
     if not user_id:
@@ -542,7 +562,8 @@ def get_budget_users(request):
             pass
     return JsonResponse({'users': users_list})
 
-#----------------------------------------------------------------------
+
+# ----------------------------------------------------------------------
 
 def delete_transaction(request, transaction_id):
     user_id = request.session.get('user_id')
@@ -564,9 +585,10 @@ def delete_transaction(request, transaction_id):
     messages.error(request, "Invalid request.")
     return redirect('budzetApp:index')
 
-#----------------------------------------------------------------------
 
-#Generowanie PDF
+# ----------------------------------------------------------------------
+
+# Generowanie PDF
 
 def export_data_view(request):
     user_id = request.session.get('user_id')
@@ -578,7 +600,8 @@ def export_data_view(request):
     budgets = Budzety.objects.filter(users=user).order_by('name')
     selected_budget = None
 
-    budget_id = request.GET.get("budget") if request.GET.get("budget") else request.session.get('selected_budget') if request.session.get('selected_budget') else None
+    budget_id = request.GET.get("budget") if request.GET.get("budget") else request.session.get(
+        'selected_budget') if request.session.get('selected_budget') else None
     if budget_id:
         selected_budget = budgets.filter(id=budget_id).first()
 
@@ -589,6 +612,7 @@ def export_data_view(request):
         "budgets": budgets,
         "selected_budget": selected_budget
     })
+
 
 def generate_pdf(request):
     user_id = request.session.get('user_id')
@@ -651,6 +675,7 @@ def generate_pdf(request):
 
     return response
 
+
 def pdf_temp(request):
     user_id = request.session.get('user_id')
     if not user_id:
@@ -681,8 +706,6 @@ def pdf_temp(request):
     )
     for cat in category_expenses:
         cat['total'] = abs(cat['total'])
-
-
 
     users_list = list(users_in_budget)
     user_pairs = list(zip_longest(*[iter(users_list)] * 2, fillvalue=None))  # tworzy listę 2-elementowych krotek
