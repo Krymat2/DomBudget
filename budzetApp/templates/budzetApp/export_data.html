@@ -42,20 +42,27 @@
     border-radius: 6px;
   }
 
-  button {
-    background-color: #8A2BE2;
-    color: white;
-    padding: 0.75rem;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
+  .button-group {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem; /* odstęp między przyciskami */
 
-  button:hover {
-    background-color: #6A1B9A;
-  }
+   }
+
+    .button-group button {
+        background-color: #8A2BE2;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    .button-group button:hover {
+        background-color: #6A1B9A;
+    }
 </style>
 {% endblock %}
 
@@ -77,8 +84,14 @@
                     </option>
                 {% endfor %}
             </select>
+            <div class="button-group">
+                <button type="submit">Export to PDF</button>
+                <!-- Podgląd PDF -->
+                <a href="{% url 'budzetApp:pdf_temp' %}?budget={{ selected_budget.id }}" target="_blank">
+                    <button type="button">Preview PDF</button>
+                </a>
+            </div>
 
-            <button type="submit">Export to PDF</button>
         </form>
     </div>
     {% else %}
