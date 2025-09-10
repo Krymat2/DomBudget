@@ -22,15 +22,9 @@
         {% endfor %}
         <div class="form-actions">
             <button type="submit" class="btn-submit">Add</button>
-            <a href="{% url 'budzetApp:budget_list' %}" class="back-link">Back to the budget list</a>
+            <a href="{% url 'budzetApp:category_list' %}" class="back-link">Back</a>
         </div>
     </form>
-    {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
+
 </div>
 {% endblock %}

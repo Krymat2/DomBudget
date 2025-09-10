@@ -18,7 +18,6 @@ urlpatterns = [
     path('budget_list/', views.budget_list, name='budget_list'),
     path('transaction/<int:transaction_id>/', views.transaction_detail, name='transaction_detail'),
     path('transaction_detail_api/<int:pk>/', views.transaction_detail_api, name='transaction_detail_api'),
-    path('create_category/', views.create_category, name='create_category'),
     path('add_user_to_budget/', views.add_user_to_budget, name='add_user_to_budget'),
     path('get_budget_users/', views.get_budget_users, name='get_budget_users'),
     path('logout/', views.logout_view, name='logout'),
@@ -29,5 +28,9 @@ urlpatterns = [
     path('delete_transaction/<int:transaction_id>/', views.delete_transaction, name='delete_transaction'),
     path('export/', views.export_data_view, name='export_data'),
     path('pdftemp/', views.pdf_temp, name='pdf_temp'),
+    path('create-category/', views.create_category, name='create_category'),
+    path('categories/', views.category_list, name='category_list'),
+    path('categories/edit/<int:pk>/', views.edit_category, name='edit_category'),
+    path('categories/delete/<int:pk>/', views.delete_category, name='delete_category'),
 
 ]

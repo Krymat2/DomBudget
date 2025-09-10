@@ -248,7 +248,7 @@ function closeDetailsPopup() {
             {% endif %}
             <!-- Prawa część: przycisk eksportu -->
             <div class="export-button-container">
-                <a href="{% url 'budzetApp:export_data' %}" class="menu-item" style="padding: 8px 14px; border-radius: 6px; background: #4CAF50; color: white; text-decoration: none; font-weight: bold;">
+                <a href="{% url 'budzetApp:export_data' %}?budget={{ selected_budget.id }}" class="menu-item" style="padding: 8px 14px; border-radius: 6px; background: #4CAF50; color: white; text-decoration: none; font-weight: bold;">
                     📄 Export PDF
                 </a>
             </div>

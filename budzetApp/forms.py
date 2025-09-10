@@ -1,3 +1,4 @@
+from email.message import Message
 from typing import Any
 from django import forms
 from django.core.exceptions import ValidationError
@@ -81,6 +82,13 @@ class KategorieCreateForm(forms.ModelForm):
             self.fields['budget'].queryset = budgets_qs
     
         self.fields['budget'].label_from_instance = lambda obj: obj.name
+
+    def clean_budget(self):
+        budget = self.cleaned_data.get('budget')
+        if budget is None:
+
+            raise forms.ValidationError("You must select a budget for the category.")
+        return budget
 
 class AddUserToBudgetForm(forms.Form):
     budget = forms.ModelChoiceField(

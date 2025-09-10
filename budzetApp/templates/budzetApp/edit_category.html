@@ -1,0 +1,36 @@
+{% extends "budzetApp/temp.html" %}
+{% load static %}
+
+{% block title %}Edit Category{% endblock title %}
+
+
+{% block styles %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+{% endblock styles %}
+
+{% block main %}
+<div class="form-container">
+  <h2>Edit Category</h2>
+
+
+  <form method="post" class="form">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label for="id_name">Category Name</label>
+      {{ form.category_name }}
+    </div>
+
+    <div class="form-group">
+      <label for="id_budget">Budget</label>
+      {{ form.budget }}
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-submit">Save changes</button>
+      <a href="{% url 'budzetApp:category_list' %}" class="back-link">Back</a>
+    </div>
+  </form>
+</div>
+{% endblock main %}

@@ -1,0 +1,87 @@
+{% extends "budzetApp/temp.html" %}
+{% load static %}
+{% block title %}Category List{% endblock title %}
+
+{% block styles %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/budget_list.css' %}" />
+<style>
+.popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(18,18,18,0.85);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+.popup-overlay.active {
+    display: flex;
+}
+.popup-content {
+    background: #232323;
+    padding: 2em 1.5em;
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    max-width: 320px;
+    margin: auto;
+    text-align: center;
+    color: #e0e0e0;
+    border: 1px solid #333;
+}
+.popup-title {
+    font-size: 1.2em;
+    margin-bottom: 1.5em;
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+.popup-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1em;
+}
+</style>
+{% endblock styles %}
+
+{% block main %}
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <h1>Categories</h1>
+    <a href="{% url 'budzetApp:create_category' %}" class="menu-item"
+       style="padding: 8px 16px; background: #4CAF50; color: white; border-radius: 6px; text-decoration: none;">
+       ➕ Add New Category
+    </a>
+</div>
+<div class="table-container">
+
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead style="background: #f1f1f1;">
+            <tr>
+                <th style="padding: 8px; text-align: left;">Name</th>
+                <th style="padding: 8px; text-align: left;">Budget</th>
+                <th style="padding: 8px; text-align: left;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+            <tr style="border-bottom: 1px solid #ddd;">
+                <td style="padding: 8px;">{{ category.category_name }}</td>
+                <td style="padding: 8px;">{{ category.budget.name }}</td>
+                <td style="padding: 8px;">
+                    <a href="{% url 'budzetApp:edit_category' category.pk %}" 
+                       style="margin-right: 8px; text-decoration: none; color: #1976d2;">✏️ Edit</a>
+                    <a href="{% url 'budzetApp:delete_category' category.pk %}" 
+                       style="text-decoration: none; color: #d32f2f;">🗑️ Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" style="padding: 16px; text-align: center;">No categories yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock main %}

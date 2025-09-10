@@ -59,13 +59,15 @@ def index(request):
     if user_id:
         user = Uzytkownicy.objects.get(pk=user_id)
         budgets = Budzety.objects.filter(users=user).order_by('id')
-        selected_budget_id = request.GET.get('budget')
+        selected_budget_id = request.GET.get('budget') if request.GET.get('budget') else request.session.get('selected_budget') if request.session.get('selected_budget') else None
         if selected_budget_id:
             selected_budget = budgets.filter(id=selected_budget_id).first()
         else:
             selected_budget = budgets.first() if budgets.exists() else None
 
+
         if selected_budget:
+            request.session['selected_budget'] = selected_budget.id
             transactions = Transakcje.objects.filter(budget=selected_budget).order_by('-transaction_date')
             total_income = transactions.filter(amount__gt=0).aggregate(Sum('amount'))['amount__sum'] or 0
             total_expenses = transactions.filter(amount__lt=0).aggregate(Sum('amount'))['amount__sum'] or 0
@@ -459,10 +461,72 @@ def create_category(request):
         form = KategorieCreateForm(request.POST, budgets_qs=user_budgets)
         if form.is_valid():
             form.save()
-            return redirect('budzetApp:budget_list')
+            return redirect('budzetApp:category_list')
+        else:
+            # Przekazujemy wszystkie błędy do messages
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"Field {field}: {error}")
     else:
         form = KategorieCreateForm(budgets_qs=user_budgets)
     return render(request, 'budzetApp/create_category.html', {'form': form})
+
+
+def category_list(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        messages.error(request, "You need to be logged in.")
+        return redirect('budzetApp:login')
+
+    user = Uzytkownicy.objects.get(pk=user_id)
+    selected_budget_id = request.session.get('selected_budget')
+    categories = Kategorie.objects.filter(budget__users=user, budget__id=selected_budget_id).order_by('category_name')
+
+
+    return render(request, 'budzetApp/category_list.html', {
+        'categories': categories
+    })
+
+
+def edit_category(request, pk):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        messages.error(request, "You need to be logged in.")
+        return redirect('budzetApp:login')
+
+    user = Uzytkownicy.objects.get(pk=user_id)
+    user_budgets = Budzety.objects.filter(users=user)
+    category = get_object_or_404(Kategorie, pk=pk, budget__users=user)
+
+    if request.method == 'POST':
+        form = KategorieCreateForm(request.POST, instance=category, budgets_qs=user_budgets)
+        if form.is_valid():
+            form.save()
+            return redirect('budzetApp:category_list')
+        else:
+            # Przekazujemy wszystkie błędy do messages
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"Field {field}: {error}")
+    else:
+        form = KategorieCreateForm(instance=category, budgets_qs=user_budgets)
+
+    return render(request, 'budzetApp/edit_category.html', {'form': form})
+
+def delete_category(request, pk):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        messages.error(request, "You need to be logged in.")
+        return redirect('budzetApp:login')
+
+    user = Uzytkownicy.objects.get(pk=user_id)
+    category = get_object_or_404(Kategorie, pk=pk, budget__users=user)
+
+    if request.method == 'POST':
+        category.delete()
+        return redirect('budzetApp:category_list')
+
+    return render(request, 'budzetApp/delete_category.html', {'category': category})
 
 
 # Strona pobierania użytkowników budżetu
@@ -514,7 +578,7 @@ def export_data_view(request):
     budgets = Budzety.objects.filter(users=user).order_by('name')
     selected_budget = None
 
-    budget_id = request.GET.get("budget")
+    budget_id = request.GET.get("budget") if request.GET.get("budget") else request.session.get('selected_budget') if request.session.get('selected_budget') else None
     if budget_id:
         selected_budget = budgets.filter(id=budget_id).first()
 
