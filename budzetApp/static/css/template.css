@@ -7,6 +7,18 @@ body {
     overflow-x: hidden;
 }
 
+body, html {
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+.dashboard-container {
+    width: 100%;
+}
+
+
+
 .messages-bottom-right {
     position: fixed;
     right: 24px;

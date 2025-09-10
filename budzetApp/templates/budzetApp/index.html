@@ -202,7 +202,7 @@ function closeDetailsPopup() {
 <div class="summary-section">
     {# Przeniesiony kontener wyboru budżetu do sekcji głównej #}
     <div id="budget-selector-section" style="margin-bottom: 20px; position: relative;">
-        <div class="budget-flex-row">
+        <div class="budget-flex-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
             <!-- Wybór budżetu -->
             <div class="budget-dropdown-panel">
                 <div id="budget-display-container-main" class="budget-dropdown-toggle-row">
@@ -246,7 +246,14 @@ function closeDetailsPopup() {
                 </ul>
             </div>
             {% endif %}
+            <!-- Prawa część: przycisk eksportu -->
+            <div class="export-button-container">
+                <a href="{% url 'budzetApp:export_data' %}" class="menu-item" style="padding: 8px 14px; border-radius: 6px; background: #4CAF50; color: white; text-decoration: none; font-weight: bold;">
+                    📄 Export PDF
+                </a>
+            </div>
         </div>
+
     </div>
 
     <div class="summary-cards">
