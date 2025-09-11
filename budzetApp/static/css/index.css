@@ -330,6 +330,20 @@ td.expense { color: #e74c3c; font-weight: 600; }
     font-size: 0.98rem;
 }
 
+.transactions-filter form select,
+.transactions-filter form input[type="date"] {
+    background: #23272f;
+    color: #fff;
+    border: 1px solid #333;
+    font-size: 1rem;
+}
+.transactions-filter a {
+    color: #e74c3c;
+    font-size: 0.98rem;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 .budget-flex-row {
     display: flex;
     align-items: flex-start;
@@ -450,4 +464,109 @@ td.expense { color: #e74c3c; font-weight: 600; }
     transition: max-height 0.3s ease;
     overflow: hidden;
 }
+
+.budget-arrow-btn {
+    background: none;
+    border: none;
+    padding: 0 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background 0.18s;
+    border-radius: 50%;
+    height: 40px;
+    width: 40px;
+    justify-content: center;
+}
+.budget-arrow-btn svg {
+    display: block;
+    transition: stroke 0.2s, transform 0.2s;
+}
+.budget-arrow-btn:hover svg path {
+    stroke: #6200ea;
+    transform: scale(1.18);
+}
+.budget-arrow-btn:active {
+    background: #2c3440;
+}
+
+<div id="budget-selector-section" style="margin-bottom: 20px; position: relative;">
+    <div class="budget-arrow-selector" style="display: flex; align-items: center; justify-content: center; gap: 24px;">
+        <button id="budget-arrow-left" class="budget-arrow-btn" aria-label="Previous budget">&#8592;</button>
+        <span id="current-budget-name-main" style="font-size: 1.5rem; font-weight: bold; min-width: 120px; text-align: center;">
+            {% if selected_budget %}
+                {{ selected_budget.name }}
+            {% else %}
+                Panel główny
+            {% endif %}
+        </span>
+        <button id="budget-arrow-right" class="budget-arrow-btn" aria-label="Next budget">&#8594;</button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const budgets = [
+        {% for budget in budgets %}
+            {id: {{ budget.id }}, name: "{{ budget.name|escapejs }}"},
+        {% endfor %}
+    ];
+    let currentIndex = budgets.findIndex(b => b.id === {{ selected_budget.id|default:"null" }});
+    const leftBtn = document.getElementById('budget-arrow-left');
+    const rightBtn = document.getElementById('budget-arrow-right');
+    const nameSpan = document.getElementById('current-budget-name-main');
+
+    // Hide arrows if only one budget
+    if (budgets.length <= 1) {
+        leftBtn.style.visibility = 'hidden';
+        rightBtn.style.visibility = 'hidden';
+    }
+
+    function updateBudget(direction) {
+        if (budgets.length === 0) return;
+        if (currentIndex === -1) currentIndex = 0;
+        if (direction === 'left') {
+            currentIndex = (currentIndex - 1 + budgets.length) % budgets.length;
+        } else if (direction === 'right') {
+            currentIndex = (currentIndex + 1) % budgets.length;
+        }
+        // Smoothly update the name
+        nameSpan.style.opacity = 0.3;
+        setTimeout(() => {
+            nameSpan.textContent = budgets[currentIndex].name;
+            nameSpan.style.opacity = 1;
+            // Redirect after a short delay for smoothness
+            setTimeout(() => {
+                window.location.href = "?budget=" + budgets[currentIndex].id;
+            }, 250);
+        }, 150);
+    }
+
+    leftBtn.addEventListener('click', function() {
+        updateBudget('left');
+    });
+    rightBtn.addEventListener('click', function() {
+        updateBudget('right');
+    });
+});
+</script>
+
+<style>
+#current-budget-name-main {
+    transition: opacity 0.2s;
+}
+
+#slide-container {
+    transition: transform 0.5s cubic-bezier(.77,0,.18,1), opacity 0.4s;
+    will-change: transform, opacity;
+}
+#slide-container.slide-left {
+    transform: translateX(-100vw);
+    opacity: 0;
+}
+#slide-container.slide-right {
+    transform: translateX(100vw);
+    opacity: 0;
+}
+</style>
 

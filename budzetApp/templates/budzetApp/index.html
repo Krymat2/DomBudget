@@ -210,67 +210,74 @@ function toggleUsersList() {
     }
 }
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const budgets = [
+        {% for budget in budgets %}
+            {id: {{ budget.id }}, name: "{{ budget.name|escapejs }}"},
+        {% endfor %}
+    ];
+    let currentIndex = budgets.findIndex(b => b.id === {{ selected_budget.id|default:"null" }});
+    const leftBtn = document.getElementById('budget-arrow-left');
+    const rightBtn = document.getElementById('budget-arrow-right');
+    const slideContainer = document.getElementById('slide-container');
+
+    // Hide arrows if only one budget
+    if (budgets.length <= 1) {
+        leftBtn.style.visibility = 'hidden';
+        rightBtn.style.visibility = 'hidden';
+    }
+
+    function slideAndChange(direction) {
+        if (budgets.length === 0) return;
+        if (currentIndex === -1) currentIndex = 0;
+        if (direction === 'left') {
+            currentIndex = (currentIndex - 1 + budgets.length) % budgets.length;
+            slideContainer.classList.add('slide-right');
+        } else if (direction === 'right') {
+            currentIndex = (currentIndex + 1) % budgets.length;
+            slideContainer.classList.add('slide-left');
+        }
+        setTimeout(() => {
+            window.location.href = "?budget=" + budgets[currentIndex].id;
+        }, 450); // match the CSS transition duration
+    }
+
+    leftBtn.addEventListener('click', function() {
+        slideAndChange('left');
+    });
+    rightBtn.addEventListener('click', function() {
+        slideAndChange('right');
+    });
+});
+</script>
 {% endblock scripts %}
 
 {% block main %}
+<div id="slide-container">
 <div class="summary-section">
     {# Przeniesiony kontener wyboru budżetu do sekcji głównej #}
     <div id="budget-selector-section" style="margin-bottom: 20px; position: relative;">
-        <div class="budget-flex-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-            <!-- Wybór budżetu -->
-            <div class="budget-dropdown-panel">
-                <div id="budget-display-container-main" class="budget-dropdown-toggle-row">
-                    <span id="budget-dropdown-toggle" style="display: flex; align-items: center;">
-                        <span style="font-size: 1.5rem; font-weight: bold; margin-right: 8px;">
-                            Budget:
-                        </span>
-                        <span id="current-budget-name-main" style="font-weight: bold;">
-                            {% if selected_budget %}
-                                {{ selected_budget.name }}
-                            {% else %}
-                                Panel główny
-                            {% endif %}
-                        </span>
-                        <span id="budget-arrow" style="font-size: 1.2rem; margin-left: 8px;">▼</span>
-                    </span>
-                </div>
-                <div id="budget-dropdown-main" class="budget-dropdown-content">
-                    {% if budgets %}
-                    <h3>Choose Budget</h3>
-                    <ul>
-                        {% for budget in budgets %}
-                        <li>
-                            <a href="?budget={{ budget.id }}" class="budget-select">{{ budget.name }}</a>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    {% else %}
-                    <p>No budgets available.</p>
-                    {% endif %}
-                </div>
-            </div>
-            <!-- Użytkownicy budżetu -->
-            {% if selected_budget %}
-            <div class="budget-users-panel styled-users-panel">
-                <div class="users-panel-header" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleUsersList()">
-                    <h3 style="margin: 0;">Budget users:</h3>
-                    <span id="users-toggle-arrow" style="font-size: 1.2em; transition: transform 0.2s;">▼</span>
-                </div>
-                <ul id="budget-users-list" style="margin-top: 10px; display: none;">
-                    {% for user in users_in_budget %}
-                    <li>{{ user.username }} <span class="user-email">({{ user.email }})</span></li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
-            <!-- Prawa część: przycisk eksportu -->
-            <div class="export-button-container">
-                <a href="{% url 'budzetApp:export_data' %}?budget={{ selected_budget.id }}" class="menu-item" style="padding: 8px 14px; border-radius: 6px; background: #4CAF50; color: white; text-decoration: none; font-weight: bold;">
-                    📄 Export PDF
-                </a>
-            </div>
+        <div class="budget-arrow-selector" style="display: flex; align-items: center; justify-content: center; gap: 24px;">
+            <button id="budget-arrow-left" class="budget-arrow-btn" aria-label="Previous budget">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                    <path d="M15.5 19l-7-7 7-7" stroke="#7c4dff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <span id="current-budget-name-main" style="font-size: 1.5rem; font-weight: bold; min-width: 120px; text-align: center;">
+                {% if selected_budget %}
+                    {{ selected_budget.name }}
+                {% else %}
+                    Panel główny
+                {% endif %}
+            </span>
+            <button id="budget-arrow-right" class="budget-arrow-btn" aria-label="Next budget">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                    <path d="M8.5 5l7 7-7 7" stroke="#7c4dff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
         </div>
-
     </div>
 
     <div class="summary-cards">
@@ -317,6 +324,7 @@ function toggleUsersList() {
                 <p>Set up a new budget plan</p>
                 <a href="{% url 'budzetApp:create_budget' %}" aria-label="Create budget"></a>
             </div>
+            
 
         </div>
     </div>
@@ -325,6 +333,29 @@ function toggleUsersList() {
     <div class="dashboard-flex-row" style="display: flex; align-items: flex-start; gap: 32px; flex-wrap: wrap;">
         <div class="recent-transactions" style="flex: 2 1 400px; min-width: 320px;">
             <h2>Recent Transactions</h2>
+            <div class="transactions-filter" style="margin-bottom: 18px;">
+    <form method="get" id="transactions-filter-form" style="display: flex; gap: 12px; align-items: center;">
+        {% if selected_budget %}
+        <select name="category" onchange="this.form.submit()" style="padding: 6px 10px; border-radius: 5px;">
+            <option value="">All categories</option>
+            {% for cat in selected_budget.kategorie_set.all %}
+                <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>
+                    {{ cat.category_name }}
+                </option>
+            {% endfor %}
+        </select>
+        {% endif %}
+        <select name="type" onchange="this.form.submit()" style="padding: 6px 10px; border-radius: 5px;">
+            <option value="">All types</option>
+            <option value="income" {% if request.GET.type == "income" %}selected{% endif %}>Income</option>
+            <option value="expense" {% if request.GET.type == "expense" %}selected{% endif %}>Expense</option>
+        </select>
+        <input type="date" name="date" value="{{ request.GET.date }}" onchange="this.form.submit()" style="padding: 6px 10px; border-radius: 5px;">
+        {% if request.GET.category or request.GET.type or request.GET.date %}
+        <a href="?{% if request.GET.page %}page={{ request.GET.page }}{% endif %}" style="margin-left: 10px; color: #e74c3c; text-decoration: underline;">Clear</a>
+        {% endif %}
+    </form>
+</div>
             <div class="transactions-table-wrapper">
             <table>
                 <thead>
@@ -399,6 +430,7 @@ function toggleUsersList() {
         {% endif %}
     </div>
     {% endif %}
+</div>
 </div>
 
 <!-- Delete confirmation popup - umieść tuż przed endblock main -->

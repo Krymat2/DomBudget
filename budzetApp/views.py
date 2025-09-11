@@ -70,6 +70,22 @@ def index(request):
         if selected_budget:
             request.session['selected_budget'] = selected_budget.id
             transactions = Transakcje.objects.filter(budget=selected_budget).order_by('-transaction_date')
+
+            # --- Add filtering here ---
+            category_id = request.GET.get('category')
+            tx_type = request.GET.get('type')
+            tx_date = request.GET.get('date')
+
+            if category_id:
+                transactions = transactions.filter(category_id=category_id)
+            if tx_type == 'income':
+                transactions = transactions.filter(amount__gt=0)
+            elif tx_type == 'expense':
+                transactions = transactions.filter(amount__lt=0)
+            if tx_date:
+                transactions = transactions.filter(transaction_date=tx_date)
+            # --- End filtering ---
+
             total_income = transactions.filter(amount__gt=0).aggregate(Sum('amount'))['amount__sum'] or 0
             total_expenses = transactions.filter(amount__lt=0).aggregate(Sum('amount'))['amount__sum'] or 0
             budget_amount = selected_budget.budget_amount  # <-- dodaj tę linię

@@ -22,9 +22,6 @@
                 <div></div>
                 <div></div>
             </div>
-        </div>
-
-        <div class="navbar-center" style="flex: 1; display: flex; justify-content: center;">
             <a href="{% url 'budzetApp:index' %}"
                style="
                     font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
@@ -38,9 +35,10 @@
                     background-clip: text;
                     text-decoration: none;
                     transition: opacity 0.18s;
-                    text-align: center;
+                    text-align: left;
                     line-height: 1.3;
                     padding-bottom: 6px;
+                    margin-left: 18px;
                "
                onmouseover="this.style.opacity='0.8'"
                onmouseout="this.style.opacity='1'"
@@ -51,6 +49,13 @@
 
         {% if session_user %}
         <div class="navbar-right">
+            <button id="show-budget-users-btn" class="show-budget-users-btn small-btn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="12" cy="7" r="4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Budget Users
+</button>
             <div id="user-menu-container">
                 <span class="user-name">{{ session_user.username }}</span>
                 <button id="user-menu-btn">
@@ -94,6 +99,29 @@
         </ul>
     </div>
     {% endif %}
+
+    <div id="budget-users-popup" class="popup-overlay" style="display:none;">
+    <div class="form-container" style="max-width: 420px; position: relative;">
+        <button onclick="closeBudgetUsersPopup()" class="popup-close-btn" aria-label="Close">&times;</button>
+        <h2 class="popup-title-centered">
+            Budget Users
+        </h2>
+        <div id="budget-users-section" class="budget-users-section">
+            <h3>
+                Users in budget: <span id="popup-budget-name" style="color: #7c4dff; font-weight: 600;"></span>
+            </h3>
+            <ul id="popup-budget-users-list" class="budget-users-list"></ul>
+        </div>
+        <div style="margin-top: 22px; display: flex; gap: 12px; justify-content: center;">
+            <button id="generate-invite-btn" class="leave-btn">Generate invitation</button>
+        </div>
+        <div id="invite-link-section" class="invite-link-section" style="display:none;">
+            <label for="popup-invite-link">Copy link below:</label>
+            <input type="text" id="popup-invite-link" readonly />
+            <button onclick="navigator.clipboard.writeText(document.getElementById('popup-invite-link').value)" class="leave-btn">Copy</button>
+        </div>
+    </div>
+</div>
 
     {% block scripts %}
     <script>
@@ -149,6 +177,121 @@
                 sideMenu.classList.remove('active');
             }
         });
+
+        document.getElementById('show-budget-users-btn').addEventListener('click', function() {
+            // Fetch budget users via AJAX or any other method
+            // For demonstration, let's assume we have the data already
+            const budgetUsers = [
+                { id: 1, name: 'User One' },
+                { id: 2, name: 'User Two' },
+                { id: 3, name: 'User Three' }
+            ];
+
+            const budgetName = 'Sample Budget';
+
+            // Populate the budget users list
+            const usersList = document.getElementById('popup-budget-users-list');
+            usersList.innerHTML = ''; // Clear existing list
+            budgetUsers.forEach(user => {
+                const li = document.createElement('li');
+                li.textContent = user.name;
+                usersList.appendChild(li);
+            });
+
+            // Set the budget name
+            document.getElementById('popup-budget-name').textContent = budgetName;
+
+            // Show the popup
+            document.getElementById('budget-users-popup').style.display = 'block';
+        });
+
+        function closeBudgetUsersPopup() {
+            document.getElementById('budget-users-popup').style.display = 'none';
+        }
+
+        document.getElementById('generate-invite-btn').addEventListener('click', function() {
+            // Generate invite link logic here
+            const inviteLink = 'https://example.com/invite?budget=12345'; // Sample link
+
+            // Set the invite link to the input field
+            document.getElementById('popup-invite-link').value = inviteLink;
+
+            // Show the invite link section
+            document.getElementById('invite-link-section').style.display = 'block';
+        });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const showBtn = document.getElementById('show-budget-users-btn');
+    const popup = document.getElementById('budget-users-popup');
+    const usersList = document.getElementById('popup-budget-users-list');
+    const budgetNameSpan = document.getElementById('popup-budget-name');
+    const inviteBtn = document.getElementById('generate-invite-btn');
+    const inviteSection = document.getElementById('invite-link-section');
+    const inviteInput = document.getElementById('popup-invite-link');
+
+    // Show popup and fetch users
+    showBtn?.addEventListener('click', function() {
+        popup.style.display = 'flex';
+        inviteSection.style.display = 'none';
+        // Fetch users for the selected budget
+        const budgetId = "{{ selected_budget.id|default:'' }}";
+        const budgetName = "{{ selected_budget.name|default:'(No budget selected)' }}";
+        budgetNameSpan.textContent = budgetName;
+        usersList.innerHTML = '<li style="color:#aaa;">Loading...</li>';
+        if (budgetId) {
+            fetch("{% url 'budzetApp:get_budget_users' %}?budget_id=" + budgetId)
+                .then(response => response.json())
+                .then(data => {
+                    usersList.innerHTML = '';
+                    if (data.users.length === 0) {
+                        usersList.innerHTML = '<li>No users in this budget.</li>';
+                    } else {
+                        data.users.forEach(function(user) {
+                            const li = document.createElement('li');
+                            li.textContent = user.username;
+                            usersList.appendChild(li);
+                        });
+                    }
+                });
+        } else {
+            usersList.innerHTML = '<li>No budget selected.</li>';
+        }
+    });
+
+    // Close popup
+    window.closeBudgetUsersPopup = function() {
+        popup.style.display = 'none';
+        inviteSection.style.display = 'none';
+    };
+
+    // Generate invitation link
+    inviteBtn?.addEventListener('click', function() {
+        const budgetId = "{{ selected_budget.id|default:'' }}";
+        if (!budgetId) return;
+        fetch("{% url 'budzetApp:add_user_to_budget' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: "budget=" + budgetId
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Try to extract the invite link from the returned HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
+            const input = doc.querySelector("#invite-link");
+            if (input) {
+                inviteInput.value = input.value;
+                inviteSection.style.display = 'block';
+            } else {
+                inviteInput.value = "Could not generate link.";
+                inviteSection.style.display = 'block';
+            }
+        });
+    });
+});
     </script>
     {% endblock scripts %}
 </body>

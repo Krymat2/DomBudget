@@ -165,33 +165,43 @@ body, html {
     gap: 8px; /* Odstęp między nazwą a strzałką */
 }
 
-.user-name {
-    color: #e0e0e0; /* Jasny kolor tekstu */
-    font-size: 1rem;
-    font-weight: 500;
-    pointer-events: none; /* Wyłącza klikalność nazwy */
-}
-
 #user-menu-btn {
-    background: none;
+    background: linear-gradient(90deg, #23272f 0%, #23213a 100%);
     border: none;
     cursor: pointer;
-    padding: 8px 12px;
-    color: #e0e0e0;
+    padding: 8px 16px;
+    color: #fff;
     font-size: 1rem;
     display: flex;
     align-items: center;
-    transition: background-color 0.2s ease;
+    border-radius: 6px;
+    transition: background 0.18s, box-shadow 0.18s;
+    font-weight: 600;
+    gap: 8px;
 }
 
-#user-menu-btn:hover {
-    background-color: #3a3a3a;
-    border-radius: 4px;
+#user-menu-btn:hover, #user-menu-btn.active {
+    background: linear-gradient(90deg, #7c4dff 0%, #6200ea 100%);
+    box-shadow: 0 2px 8px rgba(124,77,255,0.08);
 }
 
-#user-menu-btn.active {
-    background-color: #3a3a3a;
-    border-radius: 4px;
+#user-menu-btn span {
+    font-size: 1.1em;
+    margin-left: 6px;
+    transition: transform 0.2s;
+    display: inline-block;
+}
+
+#user-menu-btn.active span {
+    transform: rotate(180deg);
+}
+
+.user-name {
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-right: 4px;
+    pointer-events: none; /* Wyłącza klikalność nazwy */
 }
 
 #user-dropdown {
@@ -222,4 +232,37 @@ body, html {
 
 #user-dropdown a:hover {
     background-color: #3a3a3a;
+}
+
+.show-budget-users-btn {
+    background: linear-gradient(90deg, #7c4dff 0%, #6200ea 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 22px;
+    font-size: 1.08rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(124,77,255,0.10);
+    transition: background 0.18s, transform 0.15s, box-shadow 0.18s;
+    margin-right: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: 0.5px;
+}
+
+.show-budget-users-btn:hover, .show-budget-users-btn:focus {
+    background: linear-gradient(90deg, #6200ea 0%, #7c4dff 100%);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 18px rgba(124,77,255,0.18);
+    outline: none;
+}
+
+.show-budget-users-btn.small-btn {
+    padding: 6px 14px;
+    font-size: 0.98rem;
+    border-radius: 6px;
+    gap: 6px;
+    margin-right: 8px;
 }
