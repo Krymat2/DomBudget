@@ -103,16 +103,14 @@
     <div id="budget-users-popup" class="popup-overlay" style="display:none;">
     <div class="form-container" style="max-width: 420px; position: relative;">
         <button onclick="closeBudgetUsersPopup()" class="popup-close-btn" aria-label="Close">&times;</button>
-        <h2 class="popup-title-centered">
-            Budget Users
-        </h2>
+        <h2 class="popup-title-centered">Budget Users</h2>
         <div id="budget-users-section" class="budget-users-section">
             <h3>
                 Users in budget: <span id="popup-budget-name" style="color: #7c4dff; font-weight: 600;"></span>
             </h3>
             <ul id="popup-budget-users-list" class="budget-users-list"></ul>
         </div>
-        <div style="margin-top: 22px; display: flex; gap: 12px; justify-content: center;">
+        <div class="popup-actions" style="margin-top: 22px;">
             <button id="generate-invite-btn" class="leave-btn">Generate invitation</button>
         </div>
         <div id="invite-link-section" class="invite-link-section" style="display:none;">
