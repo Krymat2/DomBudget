@@ -32,5 +32,5 @@ urlpatterns = [
     path('categories/', views.category_list, name='category_list'),
     path('categories/edit/<int:pk>/', views.edit_category, name='edit_category'),
     path('categories/delete/<int:pk>/', views.delete_category, name='delete_category'),
-
+    path("edit_budget/", views.edit_budget, name="edit_budget"),
 ]

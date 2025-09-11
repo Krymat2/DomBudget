@@ -296,6 +296,20 @@ def budget_list(request):
     return render(request, 'budzetApp/budget_list.html', {'budget_summaries': budget_summaries})
 
 
+def edit_budget(request):
+    budget_id = request.POST.get("budget_id")
+    name = request.POST.get("name")
+    amount = request.POST.get("budget_amount")
+
+    budget = get_object_or_404(Budzety, pk=budget_id)
+    budget.name = name
+    budget.budget_amount = amount
+    budget.save()
+
+    messages.success(request, "Budget updated successfully.")
+    return redirect("budzetApp:budget_list")
+
+
 # Strona dodawania użytkownika do budżetu
 def add_user_to_budget(request):
     user_id = request.session.get('user_id')
