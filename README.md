@@ -51,23 +51,23 @@ BudzetDomowy/         # Project settings
   urls.py             # Server routing, delegates management to the app
 ```
 
-For a full structure of project, see [STRUCTURE.md](STRUCTURE.md).
+For a full structure of project, see [STRUCTURE.md](docs/STRUCTURE.md).
 
-For a full list of models, see [MODELS.md](MODELS.md).
+For a full list of models, see [MODELS.md](docs/MODELS.md).
 
-For a full list of views, see [VIEWS.md](VIEWS.md).
+For a full list of views, see [VIEWS.md](docs/VIEWS.md).
 
 ---
 
 ## ✨ Features
 
-For a full list of features, see [FEATURES.md](FEATURES.md).
+For a full list of features, see [FEATURES.md](docs/FEATURES.md).
 
 ---
 
 ##  ️️📝 User Guide
 
-For a full user  guide, see [USER_GUIDE.md](USER_GUIDE.md).
+For a full user  guide, see [USER_GUIDE.md](docs/USER_GUIDE.md).
 
 ---
 
