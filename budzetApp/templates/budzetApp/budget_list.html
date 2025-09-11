@@ -59,7 +59,6 @@ Budget list
                     <th>Date</th>
                     <th>Budget Amount</th>
                     <th>Total transaction</th>
-                    <th>Left</th>
                     <th>Members</th>
                     <th></th>
                 </tr>
@@ -75,9 +74,6 @@ Budget list
                     </td>
                     <td>
                         {{ summary.total_transactions }} zł
-                    </td>
-                    <td class="amount {% if summary.remaining < 0 %}negative{% endif %}">
-                        {{ summary.remaining }} zł
                     </td>
                     <td data-label="Members">
                         <ul>
