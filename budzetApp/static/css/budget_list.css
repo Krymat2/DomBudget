@@ -308,3 +308,9 @@ body {
     transform: translateY(-1px);
 }
 
+.scrollable-table-wrapper {
+    max-height: 400px; /* Adjust height as needed */
+    overflow-y: auto;
+    width: 100%;
+}
+

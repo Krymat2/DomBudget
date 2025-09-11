@@ -196,6 +196,20 @@ function closeDetailsPopup() {
     document.getElementById('detailsPopup').classList.remove('active');
 }
 </script>
+
+<script>
+function toggleUsersList() {
+    const list = document.getElementById('budget-users-list');
+    const arrow = document.getElementById('users-toggle-arrow');
+    if (list.style.display === 'none') {
+        list.style.display = '';
+        arrow.style.transform = 'rotate(0deg)';
+    } else {
+        list.style.display = 'none';
+        arrow.style.transform = 'rotate(-90deg)';
+    }
+}
+</script>
 {% endblock scripts %}
 
 {% block main %}
@@ -238,8 +252,11 @@ function closeDetailsPopup() {
             <!-- Użytkownicy budżetu -->
             {% if selected_budget %}
             <div class="budget-users-panel styled-users-panel">
-                <h3>Budget users:</h3>
-                <ul>
+                <div class="users-panel-header" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleUsersList()">
+                    <h3 style="margin: 0;">Budget users:</h3>
+                    <span id="users-toggle-arrow" style="font-size: 1.2em; transition: transform 0.2s;">▼</span>
+                </div>
+                <ul id="budget-users-list" style="margin-top: 10px; display: none;">
                     {% for user in users_in_budget %}
                     <li>{{ user.username }} <span class="user-email">({{ user.email }})</span></li>
                     {% endfor %}
@@ -308,6 +325,7 @@ function closeDetailsPopup() {
     <div class="dashboard-flex-row" style="display: flex; align-items: flex-start; gap: 32px; flex-wrap: wrap;">
         <div class="recent-transactions" style="flex: 2 1 400px; min-width: 320px;">
             <h2>Recent Transactions</h2>
+            <div class="transactions-table-wrapper">
             <table>
                 <thead>
                     <tr>
@@ -350,6 +368,7 @@ function closeDetailsPopup() {
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
 
             {% if is_paginated %}
             <div class="pagination">
